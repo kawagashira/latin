@@ -4,7 +4,8 @@
 #
 
 import xml.etree.ElementTree as ET
-
+from gensim.models import word2vec
+import logging
 
 def parse_xml(i_file):
 
@@ -47,12 +48,10 @@ def bigram(text):
 
 def make_w2v(text):
 
-    from gensim.models import word2vec
-    import logging
 
     logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
-    #model = word2vec.Word2Vec(text, vector_size=100, min_count=10, window=10, alpha=0.001, epochs=4000)
+    model = word2vec.Word2Vec(text, vector_size=50, min_count=10, window=3)#, alpha=0.001, epochs=500)
     model = word2vec.Word2Vec(text, vector_size=50, min_count=10, window=3, alpha=0.001, epochs=500)
     print ('index', model.wv.index_to_key)
     return model
@@ -91,10 +90,14 @@ if __name__ == '__main__':
     STOPWORD = '"\'\:\;\“\”\.\,\(\)\!\?'
     IFILE = 'data/metamorphoses/book1.xml'
     OFILE = 'result/metamorphoses-svd.png'
+    MFILE = 'model/latin-w2v.bin'
 
     text = parse_xml(IFILE)
     #spl_text = normalize(text)
     spl_text = bigram(text)
     print (spl_text)
     model = make_w2v(spl_text)
+    model.save(MFILE)
+    del model
+    model = word2vec.Word2Vec.load(MFILE)
     scatter_plot(model, OFILE)
