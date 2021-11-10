@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-#                               word2vec.py
+#                               metamorphoses.py
 #
 
 import xml.etree.ElementTree as ET
@@ -13,7 +13,19 @@ def parse_xml(i_file):
     root = tree.getroot()
     body = root[0][0]
     div = root[0][0][0]
-    w = [child.text for child in div if child.tag == 'l']
+    #w = [child.text for child in div if child.tag == 'l']
+    w = [child.text for child in div if child.tag == 'l' and child.text is not None]
+    return w
+
+
+def parse_dir(i_dir):
+
+    import glob
+    w = []
+    file = glob.glob(i_dir)
+    for i_file in sorted(file):
+        print ('TEXT FILE:', i_file)
+        w += parse_xml(i_file)
     return w
 
 
@@ -27,21 +39,18 @@ def normalize(text):
     return ' '.join(w)
 
 
-def bigram(text):
+def bigram(text, stopword=[]):
 
     w = []
-    for line in text:
-        s = ''.join([c for c in line.lower() if c not in STOPWORD])
+    for i, line in enumerate(text):
+        s = ''.join([c for c in line.lower() if c not in stopword])
         for word in s.split(' '):
             phrase = []
             for i in range(len(word) - 1):
                 b = word[i:(i+2)]
                 phrase.append(b)
-            print (phrase)
             w.append(phrase)
     return w
-    print (w)
-    #return ' '.join(w)
 
 
 def make_w2v(text):
@@ -53,11 +62,6 @@ def make_w2v(text):
     print ('index', model.wv.index_to_key)
     return model
 
-
-"""
-import pandas as pd
-import numpy as np
-"""
 
 def scatter_plot(w2v, OFILE):
 
@@ -74,11 +78,13 @@ def scatter_plot(w2v, OFILE):
     #X = model.components_.transpose()
     X = model.embedding_
     print ('X', X.shape)
+
+    #plt.figure(figsize=(16,12))
+    plt.figure(figsize=(32,24))
     plt.scatter(X[:, 0], X[:, 1], marker=' ')
     for p, c in zip(X, w2v.wv.index_to_key):
-        #plt.text(p[0], p[1], c, ha='center', va='center', font='IPAexGothic')
         plt.text(p[0], p[1], c, ha='center', va='center', font='Courier New')
-    plt.show()
+    #plt.show()
     plt.savefig(OFILE)
     plt.close()
 
@@ -86,18 +92,21 @@ def scatter_plot(w2v, OFILE):
 if __name__ == '__main__':
 
     STOPWORD = '"\'\:\;\“\”\.\,\(\)\!\?'
-    IFILE = 'data/metamorphoses/book1.xml'
-    OFILE = 'result/metamorphoses-svd.png'
-    MFILE = 'model/latin-w2v.bin'
+    IFILE   = 'data/metamorphoses/book1.xml'
+    IDIR    = 'data/metamorphoses/*.xml'
+    OFILE   = 'result/metamorphoses-tsne.png'
+    MFILE   = 'model/latin-w2v.bin'
 
     """
-    text = parse_xml(IFILE)
+    #text = parse_xml(IFILE)
+    text = parse_dir(IDIR)
     #spl_text = normalize(text)
-    spl_text = bigram(text)
+    spl_text = bigram(text, STOPWORD)
     print (spl_text)
     model = make_w2v(spl_text)
     model.save(MFILE)
     del model
     """
+
     model = word2vec.Word2Vec.load(MFILE)
     scatter_plot(model, OFILE)
