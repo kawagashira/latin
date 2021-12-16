@@ -17,6 +17,7 @@ def parse_xml(i_file):
     w = [child.text for child in div if child.tag == 'l' and child.text is not None]
     return w
 
+"""
 
 def parse_dir(i_dir):
 
@@ -37,6 +38,7 @@ def normalize(text):
         print (s)
         w.append(' '.join(s))
     return ' '.join(w)
+"""
 
 
 def bigram(text, stopword=[]):
@@ -92,21 +94,21 @@ def scatter_plot(w2v, OFILE):
 if __name__ == '__main__':
 
     STOPWORD = '"\'\:\;\“\”\.\,\(\)\!\?'
-    IFILE   = 'data/metamorphoses/book1.xml'
+    #IFILE   = 'data/metamorphoses/book1.xml'
+    IFILE   = 'data/metamorphoses/book6.xml'
     IDIR    = 'data/metamorphoses/*.xml'
     OFILE   = 'result/metamorphoses-tsne.png'
     MFILE   = 'model/latin-w2v.bin'
 
-    """
-    #text = parse_xml(IFILE)
-    text = parse_dir(IDIR)
+    text = parse_xml(IFILE)
+    print (text); quit()
+    #text = parse_dir(IDIR)
     #spl_text = normalize(text)
     spl_text = bigram(text, STOPWORD)
     print (spl_text)
     model = make_w2v(spl_text)
     model.save(MFILE)
     del model
-    """
 
     model = word2vec.Word2Vec.load(MFILE)
     scatter_plot(model, OFILE)
